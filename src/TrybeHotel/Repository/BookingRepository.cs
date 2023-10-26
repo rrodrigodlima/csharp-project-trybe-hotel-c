@@ -1,6 +1,7 @@
 using TrybeHotel.Models;
 using TrybeHotel.Dto;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace TrybeHotel.Repository
 {
