@@ -46,7 +46,20 @@ namespace TrybeHotel.Repository
         // 3. Desenvolva o endpoint PUT /city
         public CityDto UpdateCity(City city)
         {
-            throw new NotImplementedException();
+            var selectedCity = _context.Cities!.FirstOrDefault(c => c.CityId == city.CityId)
+                             ?? throw new Exception("Cidade não encontrada");
+
+            selectedCity.Name = city.Name;
+            selectedCity.State = city.State;
+
+            _context.SaveChanges();
+
+            return new CityDto
+            {
+                CityId = selectedCity.CityId,
+                Name = selectedCity.Name,
+                State = selectedCity.State
+            };
         }
 
     }
