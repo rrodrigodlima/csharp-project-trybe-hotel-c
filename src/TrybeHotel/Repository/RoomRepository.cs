@@ -42,30 +42,42 @@ namespace TrybeHotel.Repository
         // 7. Desenvolva o endpoint POST /room
         public RoomDto AddRoom(Room room)
         {
-            // Adiciona o novo quarto ao contexto
-            _context.Rooms.Add(room);
-            _context.SaveChanges();
+            var hotel = _context.Hotels
+           .Include(h => h.City)
+           .FirstOrDefault(h => h.HotelId == room.Hotel.HotelId);
 
-            Hotel? hotel = _context.Hotels!.FirstOrDefault(h => h.HotelId == room.HotelId);
-
-            string? cityName = _context.Cities!.FirstOrDefault(c => c.CityId == hotel!.CityId)!.Name;
-
-            return new RoomDto
+            if (hotel == null)
             {
-                RoomId = room.RoomId,
+                throw new KeyNotFoundException("Hotel not found");
+            }
+
+            var newRoom = new Room
+            {
                 Name = room.Name,
                 Capacity = room.Capacity,
                 Image = room.Image,
-                Hotel = new HotelDto
-                {
-                    HotelId = room.HotelId,
-                    Name = hotel!.Name,
-                    Address = hotel.Address,
-                    CityId = hotel.CityId,
-                    CityName = cityName
-                }
+                HotelId = room.Hotel.HotelId
             };
 
+            _context.Rooms.Add(newRoom);
+            _context.SaveChanges();
+
+            return new RoomDto
+            {
+                RoomId = newRoom.RoomId,
+                Name = newRoom.Name,
+                Capacity = newRoom.Capacity,
+                Image = newRoom.Image,
+                Hotel = new HotelDto
+                {
+                    HotelId = hotel.HotelId,
+                    Name = hotel.Name,
+                    Address = hotel.Address,
+                    CityId = hotel.City.CityId,
+                    CityName = hotel.City.Name,
+                    State = hotel.City.State
+                }
+            };
         }
 
         // 8. Desenvolva o endpoint DELETE /room/:roomId
