@@ -62,6 +62,8 @@ namespace TrybeHotel.Repository
             _context.Rooms.Add(newRoom);
             _context.SaveChanges();
 
+            City city = _context.Cities!.FirstOrDefault(c => c.CityId == hotel!.CityId) ?? throw new Exception("Cidade não encontrada");
+
             return new RoomDto
             {
                 RoomId = newRoom.RoomId,
@@ -74,8 +76,8 @@ namespace TrybeHotel.Repository
                     Name = hotel.Name,
                     Address = hotel.Address,
                     CityId = hotel.City.CityId,
-                    CityName = hotel.City.Name,
-                    State = hotel.City.State
+                    CityName = city.Name,
+                    State = city.State
                 }
             };
         }
