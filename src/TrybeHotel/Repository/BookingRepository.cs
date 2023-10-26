@@ -15,9 +15,9 @@ namespace TrybeHotel.Repository
         public BookingResponse Add(BookingDtoInsert booking, string email)
         {
             var room = _context.Rooms
-          .Include(r => r.Hotel)
-          .ThenInclude(h => h.City)
-          .FirstOrDefault(r => r.RoomId == booking.RoomId);
+      .Include(r => r.Hotel)
+      .ThenInclude(h => h.City)
+      .FirstOrDefault(r => r.RoomId == booking.RoomId);
 
             if (room == null)
             {
@@ -86,26 +86,29 @@ namespace TrybeHotel.Repository
                                                where room.RoomId == booking.RoomId
                                                select new RoomDto
                                                {
-                                                   Capacity = room.Capacity,
                                                    RoomId = room.RoomId,
-                                                   Image = room.Image,
                                                    Name = room.Name,
+                                                   Capacity = room.Capacity,
+                                                   Image = room.Image,
                                                    Hotel = (from hotel in _context.Hotels
                                                             where hotel.HotelId == room.HotelId
                                                             select new HotelDto
                                                             {
-                                                                Address = hotel.Address,
-                                                                CityId = hotel.CityId,
                                                                 HotelId = hotel.HotelId,
                                                                 Name = hotel.Name,
+                                                                Address = hotel.Address,
+                                                                CityId = hotel.CityId,
                                                                 CityName = (from city in _context.Cities
                                                                             where city.CityId == hotel.CityId
-                                                                            select city.Name).First()
-                                                            }).First()
-                                               }).First()
-                                   }).ToList();
+                                                                            select city.Name).FirstOrDefault(),
+                                                                State = (from city in _context.Cities
+                                                                         where city.CityId == hotel.CityId
+                                                                         select city.State).FirstOrDefault()
+                                                            }).FirstOrDefault()
+                                               }).FirstOrDefault()
+                                   }).FirstOrDefault();
 
-            return bookingResponse.First();
+            return bookingResponse;
         }
 
         public Room GetRoomById(int RoomId)

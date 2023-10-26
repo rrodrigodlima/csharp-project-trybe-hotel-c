@@ -42,44 +42,31 @@ namespace TrybeHotel.Repository
         // 7. Desenvolva o endpoint POST /room
         public RoomDto AddRoom(Room room)
         {
-            var hotel = _context.Hotels
-           .Include(h => h.City)
-           .FirstOrDefault(h => h.HotelId == room.Hotel.HotelId);
-
-            if (hotel == null)
-            {
-                throw new KeyNotFoundException("Hotel not found");
-            }
-
-            var newRoom = new Room
-            {
-                Name = room.Name,
-                Capacity = room.Capacity,
-                Image = room.Image,
-                HotelId = room.Hotel.HotelId
-            };
-
-            _context.Rooms.Add(newRoom);
+            _context.Rooms.Add(room);
             _context.SaveChanges();
 
-            City city = _context.Cities!.FirstOrDefault(c => c.CityId == hotel!.CityId) ?? throw new Exception("Cidade não encontrada");
+            var createdRoom = from rooms in _context.Rooms
+                              where rooms.RoomId == room.RoomId
+                              join hotel in _context.Hotels on rooms.HotelId equals hotel.HotelId
+                              join city in _context.Cities on hotel.CityId equals city.CityId
+                              select new RoomDto()
+                              {
+                                  RoomId = rooms.RoomId,
+                                  Name = rooms.Name,
+                                  Image = rooms.Image,
+                                  Capacity = rooms.Capacity,
+                                  Hotel = new HotelDto()
+                                  {
+                                      HotelId = hotel.HotelId,
+                                      CityId = city.CityId,
+                                      Address = hotel.Address,
+                                      Name = hotel.Name,
+                                      CityName = city.Name,
+                                      State = hotel.City.State,
+                                  }
+                              };
 
-            return new RoomDto
-            {
-                RoomId = newRoom.RoomId,
-                Name = newRoom.Name,
-                Capacity = newRoom.Capacity,
-                Image = newRoom.Image,
-                Hotel = new HotelDto
-                {
-                    HotelId = hotel.HotelId,
-                    Name = hotel.Name,
-                    Address = hotel.Address,
-                    CityId = hotel.City.CityId,
-                    CityName = city.Name,
-                    State = city.State
-                }
-            };
+            return createdRoom.First();
         }
 
         // 8. Desenvolva o endpoint DELETE /room/:roomId
