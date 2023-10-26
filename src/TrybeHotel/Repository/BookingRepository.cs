@@ -13,49 +13,47 @@ namespace TrybeHotel.Repository
         }
         public BookingResponse Add(BookingDtoInsert booking, string email)
         {
-            Room room = _context.Rooms.FirstOrDefault(r => r.RoomId == booking.RoomId) ?? throw new Exception("Quarto não encontrado");
+            var room = _context.Rooms
+      .Include(r => r.Hotel)
+      .ThenInclude(h => h.City)
+      .FirstOrDefault(r => r.RoomId == booking.RoomId);
 
-            User user = _context.Users.FirstOrDefault(u => u.Email == email) ?? throw new Exception("Usuário não encontrado");
-
-            int? lastId = _context.Bookings.OrderBy(b => b.BookingId).LastOrDefault()?.BookingId;
-            int newId = (int)(lastId == null ? 1 : lastId + 1);
-
-            Booking newBooking = new()
+            if (room == null)
             {
-                BookingId = newId,
+                throw new KeyNotFoundException("Room not found");
+            }
+
+            var newBooking = new Booking
+            {
                 CheckIn = booking.CheckIn,
                 CheckOut = booking.CheckOut,
                 GuestQuant = booking.GuestQuant,
-                RoomId = booking.RoomId,
-                UserId = user.UserId
+                RoomId = booking.RoomId
             };
 
             _context.Bookings.Add(newBooking);
             _context.SaveChanges();
 
-            Hotel hotel = _context.Hotels.FirstOrDefault(h => h.HotelId == room.HotelId) ?? throw new Exception("Hotel não encontrado");
-
-            City city = _context.Cities.FirstOrDefault(c => c.CityId == hotel.CityId) ?? throw new Exception("Cidade não encontrada");
-
             return new BookingResponse
             {
-                BookingId = newId,
+                BookingId = newBooking.BookingId,
                 CheckIn = newBooking.CheckIn,
                 CheckOut = newBooking.CheckOut,
                 GuestQuant = newBooking.GuestQuant,
                 Room = new RoomDto
                 {
-                    RoomId = newBooking.RoomId,
+                    RoomId = room.RoomId,
                     Name = room.Name,
                     Capacity = room.Capacity,
                     Image = room.Image,
                     Hotel = new HotelDto
                     {
-                        HotelId = hotel.HotelId,
-                        Name = hotel.Name,
-                        Address = hotel.Address,
-                        CityId = hotel.CityId,
-                        CityName = city.Name
+                        HotelId = room.Hotel.HotelId,
+                        Name = room.Hotel.Name,
+                        Address = room.Hotel.Address,
+                        CityId = room.Hotel.City.CityId,
+                        CityName = room.Hotel.City.Name,
+                        State = room.Hotel.City.State
                     }
                 }
             };
