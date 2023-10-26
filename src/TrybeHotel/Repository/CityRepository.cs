@@ -18,7 +18,8 @@ namespace TrybeHotel.Repository
                 .Select(city => new CityDto
                 {
                     CityId = city.CityId,
-                    Name = city.Name
+                    Name = city.Name,
+                    State = city.State
                 })
                 .ToList();
 
@@ -35,7 +36,8 @@ namespace TrybeHotel.Repository
             var addedCityDto = new CityDto
             {
                 CityId = city.CityId,
-                Name = city.Name
+                Name = city.Name,
+                State = city.State
             };
 
             return addedCityDto;
