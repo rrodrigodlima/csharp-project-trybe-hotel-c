@@ -17,16 +17,23 @@ namespace TrybeHotel.Controllers
         {
             _repository = repository;
         }
-        
+
         [HttpGet]
-        public IActionResult GetUsers(){
-            throw new NotImplementedException();
+        [Authorize(Policy = "Admin")]
+        public IActionResult GetUsers()
+        {
+            IEnumerable<UserDto> response = _repository.GetUsers();
+
+            return Ok(response);
         }
 
         [HttpPost]
         public IActionResult Add([FromBody] UserDtoInsert user)
         {
-            throw new NotImplementedException();
+            if (_repository.UserEmailExists(user.Email)) return Conflict(new { message = "User email already exists" });
+            UserDto response = _repository.Add(user);
+
+            return Created("", response);
         }
     }
 }

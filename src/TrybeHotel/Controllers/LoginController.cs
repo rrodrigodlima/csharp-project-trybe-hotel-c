@@ -19,8 +19,13 @@ namespace TrybeHotel.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login([FromBody] LoginDto login){
-           throw new NotImplementedException();
+        public IActionResult Login([FromBody] LoginDto login)
+        {
+            // Autenticar o usuário
+            var verifyUser = _repository.Login(login);
+            if (verifyUser == null) return StatusCode(401, new { message = "Incorrect e-mail or password" });
+            var token = new TokenGenerator().Generate(verifyUser);
+            return StatusCode(200, new { token });
         }
     }
 }
