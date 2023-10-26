@@ -15,9 +15,9 @@ namespace TrybeHotel.Repository
         public BookingResponse Add(BookingDtoInsert booking, string email)
         {
             var room = _context.Rooms
-      .Include(r => r.Hotel)
-      .ThenInclude(h => h.City)
-      .FirstOrDefault(r => r.RoomId == booking.RoomId);
+          .Include(r => r.Hotel)
+          .ThenInclude(h => h.City)
+          .FirstOrDefault(r => r.RoomId == booking.RoomId);
 
             if (room == null)
             {
